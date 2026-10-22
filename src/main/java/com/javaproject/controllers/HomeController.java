@@ -45,28 +45,31 @@ public class HomeController {
     }
 
     @PostMapping("/addUser")
-    public String addUser(@RequestParam String userName, @RequestParam String password,
-            @RequestParam String[] authorities, Model model, RedirectAttributes redirectAttrs) {
+    public String addUser(
+            @RequestParam String userName,
+            @RequestParam String password,
+            Model model,
+            RedirectAttributes redirectAttrs) {
 
-        List<GrantedAuthority> authorityList = new ArrayList<>();
-
-        for (String authority : authorities) {
-            authorityList.add(new SimpleGrantedAuthority(authority));
-        }
         String encodedPassword = passwordEncoder.encode(password);
 
-        // check existing user
         if (jdbcUserDetailsManager.userExists(userName)) {
-            model.addAttribute("errorMsg", "User name already Exists. Try a different user name.");
-            model.addAttribute("authorities", authorityList);
+            model.addAttribute("errorMsg",
+                    "User name already Exists. Try a different user name.");
+            model.addAttribute("authorities", da.getAuthorities());
             return "new-user";
-        } else {
-            User user = new User(userName, encodedPassword, authorityList);
-
-            jdbcUserDetailsManager.createUser(user);
-            redirectAttrs.addFlashAttribute("userAddedMsg", "User succesfully added!");
-            return "redirect:/";
         }
+
+        User user = new User(
+                userName,
+                encodedPassword,
+                List.of(new SimpleGrantedAuthority("ROLE_USER")));
+
+        jdbcUserDetailsManager.createUser(user);
+        redirectAttrs.addFlashAttribute(
+                "userAddedMsg", "User successfully added!");
+
+        return "redirect:/";
     }
 
     @GetMapping("/")
@@ -134,7 +137,7 @@ public class HomeController {
                 "/reviews";
     }
 
-    @GetMapping("/deleteReview/{id}")
+    @PostMapping("/deleteReview/{id}")
     public String deleteReview(@PathVariable Long id) {
         Long gameId = da.getReview(id).getGameId();
         int returnValue = da.deleteReview(id);
