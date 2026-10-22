@@ -18,7 +18,7 @@ pipeline {
 
         stage('Compile') {
             steps {
-                sh 'mvn compile'
+                sh 'mvn clean compile'
             }
         }
 
@@ -30,7 +30,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'mvn package'
+                sh 'mvn clean verify'
             }
         }
 
