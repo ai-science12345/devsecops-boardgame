@@ -45,6 +45,15 @@ pipeline {
                 sh 'docker images ${IMAGE_NAME}'
             }
         }
+                stage('Trivy Security Scan') {
+            steps {
+                sh '''
+                    cd /tmp
+                    trivy image --severity HIGH,CRITICAL \
+                        devsecops-boardgame:${BUILD_NUMBER}
+                '''
+            }
+        }
     }
 }
 
